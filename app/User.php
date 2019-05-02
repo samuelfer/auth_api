@@ -40,7 +40,7 @@ class User extends Authenticatable implements JWTSubject
 
     /**
      * Obtenha o identificador que será armazenado na reivindicação de assunto do JWT.
-     *
+     *Posso rertornar o id
      * @return mixed
      */
     public function getJWTIdentifier()

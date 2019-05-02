@@ -13,7 +13,7 @@ class ApiUsuarioController extends Controller
 {
     public $loginAfterSignUp = true;
 
-    public function register(RegisterRequest $request)
+    public function register(Request $request)
     {
         $validar = validator($request->all(), [
             'name' => 'required|string',
@@ -21,7 +21,7 @@ class ApiUsuarioController extends Controller
             'password' => 'required|string|min:6|max:10'
         ]);
 
-        if($validar->fails()){
+        if ($validar->fails()) {
             return response()->json(['error' => $validar->getMessageBag()], 401);
         }
 
@@ -36,40 +36,50 @@ class ApiUsuarioController extends Controller
         if ($this->loginAfterSignUp) {
             return $this->login($request);
         }
- 
+
         return response()->json([
             'success' => true,
             'data' => $user
         ], 200);
     }
- 
+
     public function login(Request $request)
     {
+        $validar = validator($request->all(), [
+            'email' => 'required',
+            'password' => 'required'
+        ]);
+
+        if ($validar->fails()) {
+            return response()->json(['error' => $validar->getMessageBag()], 401);
+        }
+
         $input = $request->only('email', 'password');
+
         $jwt_token = null;
- 
+
         if (!$jwt_token = JWTAuth::attempt($input)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Email ou Senha inválido',
             ], 401);
         }
- 
+
         return response()->json([
             'success' => true,
             'token' => $jwt_token,
         ]);
     }
- 
+
     public function logout(Request $request)
     {
         $this->validate($request, [
             'token' => 'required'
         ]);
- 
+
         try {
             JWTAuth::invalidate($request->token);
- 
+
             return response()->json([
                 'success' => true,
                 'message' => 'Usuário deslogado com sucesso'
@@ -82,15 +92,21 @@ class ApiUsuarioController extends Controller
         }
     }
 
-    //Recupera os dados do usuario
+    //Recupera os dados do usuario autenticado
     public function getAuthUser(Request $request)
     {
         $this->validate($request, [
             'token' => 'required'
         ]);
- 
+
         $user = JWTAuth::authenticate($request->token);
- 
+
         return response()->json(['user' => $user]);
     }
+
+    public function refresh(){
+        $token = \Auth::guard('api')->refresh();
+        return ['token' => $token]; //No-content
+    }
+
 }
