@@ -3,7 +3,10 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class Handler extends ExceptionHandler
 {
@@ -47,7 +50,18 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
 
-        dd($exception);
+        if (($exception instanceof JWTException)) {
+            return $request->expectsJson()
+                ? response()->json(['message' => $exception->getMessage()], 401)
+                : redirect()->guest($exception->redirectTo() ?? route('login'));
+        }
+
+//        if($exception instanceof UnauthorizedHttpException){
+//            return $request->expectsJson()
+//                ? response()->json(['message' => $exception->getMessage()], 401)
+//                : redirect()->guest($exception->redirectTo() ?? route('login'));
+//        }
+
         return parent::render($request, $exception);
     }
 }

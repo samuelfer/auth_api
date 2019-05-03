@@ -23,7 +23,7 @@ Route::post('register', 'ApiUsuarioController@register');
 Route::post('refresh', 'ApiUsuarioController@refresh');
 
  
-Route::group(['middleware' => 'auth.jwt'], function () {
+Route::group(['middleware' => 'auth.jwt','jwt.refresh'], function () {
     Route::get('logout', 'ApiUsuarioController@logout');
  
     Route::get('user', 'ApiUsuarioController@getAuthUser');
