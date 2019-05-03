@@ -54,21 +54,20 @@ class ApiUsuarioController extends Controller
             return response()->json(['error' => $validar->getMessageBag()], 401);
         }
 
-        $input = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
 
         $jwt_token = null;
 
-        if (!$jwt_token = JWTAuth::attempt($input)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email ou Senha inválido',
-            ], 401);
+        try{
+            if (!$jwt_token = JWTAuth::attempt($credentials)) {
+                return response()->json(['success' => false,
+                    'message' => 'Email ou Senha inválido'], 401);
+            }
+        }catch(JWTException $e){
+            return response()->json(['error' => 'Não foi possível gerar o token'], 500);
         }
 
-        return response()->json([
-            'success' => true,
-            'token' => $jwt_token,
-        ]);
+        return response()->json(['success' => true, 'token' => $jwt_token]);
     }
 
     public function logout(Request $request)
@@ -80,10 +79,7 @@ class ApiUsuarioController extends Controller
         try {
             JWTAuth::invalidate($request->token);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Usuário deslogado com sucesso'
-            ]);
+            return response()->json([],204);
         } catch (JWTException $exception) {
             return response()->json([
                 'success' => false,
